@@ -1,7 +1,7 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from schemas.patient_schemas import Patient, PatientInput
-from dal.patient_collection_dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db
+from schemas.patient_schemas import Patient, PatientInput, Image
+from dal.patient_collection_dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db
 
 
 app = FastAPI()
@@ -51,4 +51,23 @@ async def add_patient(patientInputObject: PatientInput) -> Patient:
     # return created_student
     return created_patient
 
+
+@app.post("/patient_image/{id}",response_description="Adding new Image",response_model=dict,status_code=status.HTTP_201_CREATED)
+async def add_image_data(imageInputObject: Image, id: str) -> dict:
+    
+    patient = await get_patient_by_id_from_db(id)
+    if patient is not None:
+        result_status = await add_patient_image_data_to_db(new_image=imageInputObject,patient_id=id)
+        # return status of image data upload:
+        return result_status
+    else:
+        return {"status":f"Patient with {id} does not exist"}
+
+
+@app.post("/dummy_test")
+async def dummy_test(request: Request):
+    some_dummy_data = await request.json()
+    print(some_dummy_data)
+    print(type(some_dummy_data))
+    return some_dummy_data
 

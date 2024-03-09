@@ -1,6 +1,6 @@
 import motor.motor_asyncio
 import os
-from schemas.patient_schemas import Patient,PatientInput
+from schemas.patient_schemas import Patient,PatientInput, Image
 from datetime import datetime
 
 
@@ -18,17 +18,12 @@ async def get_patient_by_id_from_db(id:str) -> Patient | None :
 
 
 async def get_all_patients_from_db() -> list[Patient] :
-    print("FLAGGING2")
     client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
     db_connection = client.mp_db
     patient_collection = db_connection.get_collection("patient")
-    print("FLAGGING3")
     cursor = patient_collection.find()
     patients = await cursor.to_list(length=None)  # Retrieve all documents without limit
-    print("FLAGGING4")
     client.close()
-    print("FLAGGING5")
-    print(type(patients))
     return patients
 
 
@@ -58,4 +53,25 @@ async def add_patient_to_db(patientInputObject:PatientInput) -> Patient:
     client.close()
     return created_patient
 
+# this method adds the patient image data to db, not the image !
+async def add_patient_image_data_to_db(new_image: Image, patient_id: str) -> dict:
+    client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
+    db_connection = client.mp_db
+    patient_collection = db_connection.get_collection("patient")
+    
+    image_dict_to_insert = new_image.model_dump()
+    
+    result = await patient_collection.update_one(
+        {"id": patient_id},
+        {"$push": {"images": image_dict_to_insert}}
+    )
+    
+    print(result)
+    
+    client.close()
+    
+    if result.modified_count:
+        return {"status": "Image added successfully"}
+    else:
+        return {"status": "Update failed"}
 
