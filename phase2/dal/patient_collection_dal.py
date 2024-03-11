@@ -82,7 +82,13 @@ async def get_chats_for_a_particular_participant_from_db(participant_id: str) ->
     chat_collection = db_connection.get_collection("chat_coll")
     cursor = chat_collection.find({"participants": participant_id})
     chat = await cursor.to_list(length=None)
-    print(chat)
-    print(type(chat))
+    client.close()
+    return chat
+
+async def get_chats_for_a_particular_participant_particular_chat_thread_from_db(chat_thread_id: str) -> Chat:
+    client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
+    db_connection = client.mp_db
+    chat_collection = db_connection.get_collection("chat_coll")
+    chat = await chat_collection.find_one({"chat_thread_id": chat_thread_id})
     client.close()
     return chat

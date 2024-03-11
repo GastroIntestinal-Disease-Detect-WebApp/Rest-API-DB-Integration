@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from schemas.patient_schemas import Patient, PatientInput, Image, Chat
-from dal.patient_collection_dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db, get_chats_for_a_particular_participant_from_db
+from dal.patient_collection_dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db, get_chats_for_a_particular_participant_from_db, get_chats_for_a_particular_participant_particular_chat_thread_from_db
 
 
 app = FastAPI()
@@ -66,11 +66,12 @@ async def add_image_data(imageInputObject: Image, id: str) -> dict:
 
 @app.get("/chat/{participant_id}",response_model=list[Chat], status_code=status.HTTP_200_OK)
 async def get_chats_for_a_particular_participant(participant_id: str) -> list[Chat]:
-    print(participant_id)
     chat = await get_chats_for_a_particular_participant_from_db(participant_id)
-    print("===========================================")
-    print(chat)
-    print(type(chat))
+    return chat
+
+@app.get("/chat_thread/{chat_thread_id}",response_model=Chat, status_code=status.HTTP_200_OK)
+async def get_chats_for_a_particular_participant(chat_thread_id: str) -> Chat:
+    chat = await get_chats_for_a_particular_participant_particular_chat_thread_from_db(chat_thread_id)
     return chat
 
 @app.post("/dummy_test")
