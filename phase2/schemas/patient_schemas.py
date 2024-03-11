@@ -38,3 +38,10 @@ class PatientInput(BaseModel):
 class Patient(PatientInput):
     id: str
 
+
+class Chat(BaseModel):
+    chat_thread_id: str
+    chat_title: str
+    participants: list[str]
+    chats: list[dict]
+    

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from schemas.patient_schemas import Patient, PatientInput, Image
-from dal.patient_collection_dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db
+from schemas.patient_schemas import Patient, PatientInput, Image, Chat
+from dal.patient_collection_dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db, get_chats_for_a_particular_participant_from_db
 
 
 app = FastAPI()
@@ -52,9 +52,10 @@ async def add_patient(patientInputObject: PatientInput) -> Patient:
     return created_patient
 
 
-@app.post("/patient_image/{id}",response_description="Adding new Image",response_model=dict,status_code=status.HTTP_201_CREATED)
+@app.post("/patient_image_data/{id}",response_description="Adding new Image",response_model=dict,status_code=status.HTTP_201_CREATED)
 async def add_image_data(imageInputObject: Image, id: str) -> dict:
     
+    # 1st checking if the patient exists:
     patient = await get_patient_by_id_from_db(id)
     if patient is not None:
         result_status = await add_patient_image_data_to_db(new_image=imageInputObject,patient_id=id)
@@ -63,6 +64,14 @@ async def add_image_data(imageInputObject: Image, id: str) -> dict:
     else:
         return {"status":f"Patient with {id} does not exist"}
 
+@app.get("/chat/{participant_id}",response_model=list[Chat], status_code=status.HTTP_200_OK)
+async def get_chats_for_a_particular_participant(participant_id: str) -> list[Chat]:
+    print(participant_id)
+    chat = await get_chats_for_a_particular_participant_from_db(participant_id)
+    print("===========================================")
+    print(chat)
+    print(type(chat))
+    return chat
 
 @app.post("/dummy_test")
 async def dummy_test(request: Request):

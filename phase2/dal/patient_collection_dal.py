@@ -1,6 +1,6 @@
 import motor.motor_asyncio
 import os
-from schemas.patient_schemas import Patient,PatientInput, Image
+from schemas.patient_schemas import Patient,PatientInput, Image, Chat
 from datetime import datetime
 
 
@@ -66,7 +66,8 @@ async def add_patient_image_data_to_db(new_image: Image, patient_id: str) -> dic
         {"$push": {"images": image_dict_to_insert}}
     )
     
-    print(result)
+    # print(result)
+    # print(result.modified_count)
     
     client.close()
     
@@ -75,3 +76,13 @@ async def add_patient_image_data_to_db(new_image: Image, patient_id: str) -> dic
     else:
         return {"status": "Update failed"}
 
+async def get_chats_for_a_particular_participant_from_db(participant_id: str) -> list[Chat]:
+    client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
+    db_connection = client.mp_db
+    chat_collection = db_connection.get_collection("chat_coll")
+    cursor = chat_collection.find({"participants": participant_id})
+    chat = await cursor.to_list(length=None)
+    print(chat)
+    print(type(chat))
+    client.close()
+    return chat
