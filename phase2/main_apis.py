@@ -76,7 +76,7 @@ async def get_chats_for_a_particular_chat_thread(chat_thread_id: str) -> Chat:
     chat = await get_chats_for_a_particular_participant_particular_chat_thread_from_db(chat_thread_id)
     return chat
 
-@app.post("/chat_thread/{chat_thread_id}")
+@app.post("/chat_thread/{chat_thread_id}",response_model=dict, status_code=status.HTTP_201_CREATED)
 async def add_chats_for_a_particular_chat_thread(chat_to_add : InputSentMessage, chat_thread_id: str):
     # get current date and time:
     current_data_and_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

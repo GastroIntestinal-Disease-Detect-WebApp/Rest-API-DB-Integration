@@ -108,6 +108,8 @@ async def add_chats_for_a_particular_chat_thread_into_db(chat_to_add_dict: dict,
     )
     
     client.close()
+    print(update_result)
+    print(update_result.modified_count)
     
     if update_result.modified_count == 0:
         return {"status": "Chat message adding failed"}
