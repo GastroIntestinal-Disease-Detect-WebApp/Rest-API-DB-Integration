@@ -92,3 +92,24 @@ async def get_chats_for_a_particular_participant_particular_chat_thread_from_db(
     chat = await chat_collection.find_one({"chat_thread_id": chat_thread_id})
     client.close()
     return chat
+
+async def add_chats_for_a_particular_chat_thread_into_db(chat_to_add_dict: dict, chat_thread_id: str):
+    client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
+    db_connection = client.mp_db
+    chat_collection = db_connection.get_collection("chat_coll")
+    
+    update_result = await chat_collection.update_one(
+    {"chat_thread_id": chat_thread_id},
+    {
+        "$push": {
+            "chats": chat_to_add_dict
+        }
+    }
+    )
+    
+    client.close()
+    
+    if update_result.modified_count == 0:
+        return {"status": "Chat message adding failed"}
+    
+    return {"status": "Chat message added successfully."}

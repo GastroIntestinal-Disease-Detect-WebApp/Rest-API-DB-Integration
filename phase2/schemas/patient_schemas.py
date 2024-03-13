@@ -44,4 +44,10 @@ class Chat(BaseModel):
     chat_title: str
     participants: list[str]
     chats: list[dict]
-    
+
+class InputSentMessage(BaseModel):
+    message: str
+    from_: str
+    to: str
+
+
