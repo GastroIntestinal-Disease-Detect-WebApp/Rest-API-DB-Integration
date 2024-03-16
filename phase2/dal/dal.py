@@ -115,3 +115,20 @@ async def add_chats_for_a_particular_chat_thread_into_db(chat_to_add_dict: dict,
         return {"status": "Chat message adding failed"}
     
     return {"status": "Chat message added successfully."}
+
+
+async def create_chat_thread_in_db(chat_dict_to_insert: dict):
+    client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
+    db_connection = client.mp_db
+    chat_collection = db_connection.get_collection("chat_coll")
+    
+    print(chat_dict_to_insert)
+    
+    
+    new_chat = await chat_collection.insert_one(chat_dict_to_insert)
+    
+    client.close()
+    
+    created_chat = await get_chats_for_a_particular_participant_particular_chat_thread_from_db(chat_dict_to_insert["chat_thread_id"])
+    print(created_chat)
+    return created_chat

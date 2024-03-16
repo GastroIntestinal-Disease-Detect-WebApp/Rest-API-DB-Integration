@@ -50,4 +50,12 @@ class InputSentMessage(BaseModel):
     from_: str
     to: str
 
+class CreateChatThreadInput(BaseModel):
+    chat_title: str
+    participants: list
 
+class CreateChatThreadOutput(BaseModel):
+    chat_title: str
+    participants: list
+    chat_thread_id: str
+    chats: list

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from schemas.patient_schemas import Patient, PatientInput, Image, Chat, InputSentMessage
-from dal.patient_collection_dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db, get_chats_for_a_particular_participant_from_db, get_chats_for_a_particular_participant_particular_chat_thread_from_db, add_chats_for_a_particular_chat_thread_into_db
+from schemas.patient_schemas import Patient, PatientInput, Image, Chat, InputSentMessage, CreateChatThreadInput, CreateChatThreadOutput
+from dal.dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db, get_chats_for_a_particular_participant_from_db, get_chats_for_a_particular_participant_particular_chat_thread_from_db, add_chats_for_a_particular_chat_thread_into_db, create_chat_thread_in_db
 from datetime import datetime
 
 app = FastAPI()
@@ -45,10 +45,9 @@ async def get_all_patients() -> list[Patient]:
 
 
 @app.post("/patient",response_description="Adding new patient",response_model=Patient,status_code=status.HTTP_201_CREATED)
-async def add_patient(patientInputObject: PatientInput) -> Patient:
-    
+async def add_patient(patientInputObject: PatientInput):
+    print(patientInputObject)
     created_patient = await add_patient_to_db(patientInputObject)
-    # return created_student
     return created_patient
 
 
@@ -87,14 +86,35 @@ async def add_chats_for_a_particular_chat_thread(chat_to_add : InputSentMessage,
     
     # add the dateTime attribute to the dictionary:
     chat_to_add_dict["dateTime"] = current_data_and_time
-        
+    
     # add the dictionary to mongodb:
     status = await add_chats_for_a_particular_chat_thread_into_db(chat_to_add_dict, chat_thread_id)
     
     # return the status of operation:
     return status
 
-
+@app.post("/create_chat_thread",response_model=CreateChatThreadOutput)
+async def create_chat_thread(NewChatThread: CreateChatThreadInput):
+    # create chat_thread_id
+    current_data_and_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    current_data_and_time = str(current_data_and_time)
+    chat_thread_id = str(NewChatThread.participants[0]) + "-" + str(NewChatThread.participants[1]) + "-" + current_data_and_time
+    
+    # get dictionary representation of object
+    chat_dict_to_insert = NewChatThread.model_dump()
+    
+    # add the fields to dictionary
+    chat_dict_to_insert["chat_thread_id"] = chat_thread_id
+    chat_dict_to_insert["chats"] = []
+    
+    # add the dictionary to mongodb
+    created_chat_object = await create_chat_thread_in_db(chat_dict_to_insert)
+    
+    print(created_chat_object)
+    print(type(created_chat_object))
+    
+    # return the newly created chat object
+    return created_chat_object
 
 @app.post("/dummy_test")
 async def dummy_test(request: Request):
