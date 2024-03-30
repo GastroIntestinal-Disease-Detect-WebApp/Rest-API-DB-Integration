@@ -1,6 +1,6 @@
 import motor.motor_asyncio
 import os
-from schemas.patient_schemas import Patient,PatientInput, Image, Chat
+from schemas.schemas import Patient,PatientInput, Image, Chat
 from datetime import datetime
 
 
@@ -21,8 +21,21 @@ async def get_all_patients_from_db() -> list[Patient] :
     client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
     db_connection = client.mp_db
     patient_collection = db_connection.get_collection("patient")
+    
     cursor = patient_collection.find()
     patients = await cursor.to_list(length=None)  # Retrieve all documents without limit
+    
+    client.close()
+    return patients
+
+async def get_all_patients_under_doctor_supervision_from_db(doctor_email: str) -> list[Patient]:
+    client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
+    db_connection = client.mp_db
+    patient_collection = db_connection.get_collection("patient")
+    
+    cursor = patient_collection.find({"doctor_assigned": doctor_email})
+    patients = await cursor.to_list(length=None)  # Retrieve all documents without limit
+    
     client.close()
     return patients
 
@@ -72,9 +85,9 @@ async def add_patient_image_data_to_db(new_image: Image, patient_id: str) -> dic
     client.close()
     
     if result.modified_count:
-        return {"status": "Image added successfully"}
+        return {"detail": "Image added successfully"}
     else:
-        return {"status": "Update failed"}
+        return {"detail": "Update failed"}
 
 async def get_chats_for_a_particular_participant_from_db(participant_id: str) -> list[Chat]:
     client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
@@ -132,3 +145,4 @@ async def create_chat_thread_in_db(chat_dict_to_insert: dict):
     created_chat = await get_chats_for_a_particular_participant_particular_chat_thread_from_db(chat_dict_to_insert["chat_thread_id"])
     print(created_chat)
     return created_chat
+    
