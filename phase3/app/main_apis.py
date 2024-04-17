@@ -227,5 +227,6 @@ async def dummy_test(request: Request):
     print(type(some_dummy_data))
     return some_dummy_data
 
+
 if __name__ == "__main__":
     uvicorn.run("main_apis:app",reload=True,port=8000)
