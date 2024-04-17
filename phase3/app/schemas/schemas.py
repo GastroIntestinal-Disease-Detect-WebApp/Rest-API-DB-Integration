@@ -60,3 +60,8 @@ class CreateChatThreadOutput(BaseModel):
     participants: list
     chat_thread_id: str
     chats: list
+
+
+class UpdateModelResponseObject(BaseModel):
+    image_link: str
+    response_from_model: str

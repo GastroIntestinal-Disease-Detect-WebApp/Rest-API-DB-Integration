@@ -146,3 +146,21 @@ async def create_chat_thread_in_db(chat_dict_to_insert: dict):
     print(created_chat)
     return created_chat
     
+
+
+async def update_response_in_db(updateModelResponseDict):
+    client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
+    db_connection = client.mp_db
+    patient_collection = db_connection.get_collection("patient")
+    # Construct the filter
+    filter_query = {"images.image_link": updateModelResponseDict["image_link"]}
+    # Construct the update query
+    update_query = {"$set": {"images.$.response_from_model": updateModelResponseDict["response_from_model"]}}
+    
+    # Perform the update operation
+    result = await patient_collection.update_one(filter_query, update_query)
+    
+    if result.modified_count:
+        return 1
+    else:
+        return 0

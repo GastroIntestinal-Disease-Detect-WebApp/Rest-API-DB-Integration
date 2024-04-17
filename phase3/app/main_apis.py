@@ -1,7 +1,7 @@
 from fastapi import FastAPI, status, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from schemas.schemas import Patient, PatientInput, Image, Chat, InputSentMessage, CreateChatThreadInput, CreateChatThreadOutput
-from dal.dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db, get_chats_for_a_particular_participant_from_db, get_chats_for_a_particular_participant_particular_chat_thread_from_db, add_chats_for_a_particular_chat_thread_into_db, create_chat_thread_in_db, get_all_patients_under_doctor_supervision_from_db
+from schemas.schemas import Patient, PatientInput, Image, Chat, InputSentMessage, CreateChatThreadInput, CreateChatThreadOutput,UpdateModelResponseObject
+from dal.dal import get_all_patients_from_db,get_patient_by_id_from_db,add_patient_to_db, add_patient_image_data_to_db, get_chats_for_a_particular_participant_from_db, get_chats_for_a_particular_participant_particular_chat_thread_from_db, add_chats_for_a_particular_chat_thread_into_db, create_chat_thread_in_db, get_all_patients_under_doctor_supervision_from_db, update_response_in_db
 from datetime import datetime
 import uvicorn
 from auth_admin.admin_get_payload_of_token import admin_get_payload_of_jwt_token
@@ -200,6 +200,19 @@ async def create_chat_thread(NewChatThread: CreateChatThreadInput,payload_of_jwt
     
     # return the newly created chat object
     return created_chat_object
+
+
+@app.put("/update-model-response")
+async def update_response(updateModelResponseObject: UpdateModelResponseObject):
+    updateModelResponseDict = updateModelResponseObject.model_dump()
+    response = await update_response_in_db(updateModelResponseDict)
+    
+    if response == 1:
+        return {"message": "Response updated successfully"}
+    elif response == 0:
+        raise HTTPException(status_code=404, detail="Image link not found or no update needed")
+
+
 
 
 # model integration.
